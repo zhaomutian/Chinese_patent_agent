@@ -1,0 +1,21 @@
+# 私密配置：真实 .env 及其变体不提交；仅保留无密钥的示例模板
+.env
+.env.*
+!.env.example
+
+# 用户资料、原文提取结果、索引和运行日志只保存在本机
+/data/
+/tmp/
+
+# Python 与本地开发环境
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.DS_Store
+.uv-cache/
+.python/
+*.egg-info/
+
+.uv-cache-312/

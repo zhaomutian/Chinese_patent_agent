@@ -1,0 +1,16 @@
+{
+  "time": "2026-10-23T11:39:27.309280+08:00",
+  "source": "/Users/zhaomutian/Documents/ChatGPT/New project/patent-law-agent",
+  "destination": "/Users/zhaomutian/Chinese_patent_agent",
+  "files_verified": 78,
+  "git_repository_preserved": true,
+  "license_preserved": true,
+  "source_retained_as_backup": true,
+  "environment": "rebuilt_from_uv_lock",
+  "tests": "15 passed",
+  "api_status": 200,
+  "ui_status": 200,
+  "snapshot_id": "kb_a6d8d3546ea949130bff",
+  "chunks": 1666,
+  "status": "complete"
+}

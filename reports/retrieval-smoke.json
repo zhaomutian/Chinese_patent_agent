@@ -1,0 +1,56 @@
+{
+  "exact_law": 1,
+  "guide_descendants": 8,
+  "semantic": [
+    {
+      "source": "patent_law",
+      "locator": "article:22",
+      "heading": "第二十二条"
+    },
+    {
+      "source": "implementing_rules",
+      "locator": "article:13",
+      "heading": "第十三条"
+    },
+    {
+      "source": "examination_guidelines",
+      "locator": "part:2/chapter:4/section:3.1",
+      "heading": "3 发明创造性的审查 / 3.1 审查原则"
+    },
+    {
+      "source": "examination_guidelines",
+      "locator": "part:2/chapter:4/section:6.1",
+      "heading": "6 审查创造性时应当注意的问题 / 6.1 创立发明的途径"
+    },
+    {
+      "source": "examination_guidelines",
+      "locator": "part:2/chapter:4/section:4.3",
+      "heading": "4 几种不同类型发明的创造性判断 / 4.3 选择发明"
+    },
+    {
+      "source": "examination_guidelines",
+      "locator": "part:2/chapter:4/section:6.4",
+      "heading": "6 审查创造性时应当注意的问题 / 6.4 对要求保护的发明进行审查"
+    },
+    {
+      "source": "patent_law",
+      "locator": "article:2",
+      "heading": "第二条"
+    },
+    {
+      "source": "patent_law",
+      "locator": "article:24",
+      "heading": "第二十四条"
+    }
+  ],
+  "idempotent": {
+    "ok": true,
+    "snapshot_id": "kb_2b328a9d84ee9f49eda9",
+    "chunks": 1670,
+    "reused": true
+  },
+  "historical_snapshot_tested": "kb_2b328a9d84ee9f49eda9",
+  "current_snapshot_id": "kb_a6d8d3546ea949130bff",
+  "current_exact_law": 1,
+  "current_guide_descendants": 8
+}

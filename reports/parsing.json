@@ -1,0 +1,437 @@
+{
+  "parser_version": "supplied-pdfs-v2",
+  "documents": [
+    {
+      "source_type": "patent_law",
+      "pages": 12,
+      "provisions": 82,
+      "chunks": 82,
+      "body_pages": 11,
+      "excluded_pages": [],
+      "chapters": {},
+      "text_chars": 10783
+    },
+    {
+      "source_type": "implementing_rules",
+      "pages": 37,
+      "provisions": 148,
+      "chunks": 149,
+      "body_pages": 37,
+      "excluded_pages": [],
+      "chapters": {},
+      "text_chars": 26071
+    },
+    {
+      "source_type": "examination_guidelines",
+      "pages": 613,
+      "provisions": 1272,
+      "chunks": 1435,
+      "body_pages": 523,
+      "excluded_pages": [
+        {
+          "page": 1,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 2,
+          "reason": "blank"
+        },
+        {
+          "page": 3,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 4,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 5,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 6,
+          "reason": "blank"
+        },
+        {
+          "page": 7,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 8,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 9,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 10,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 11,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 12,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 13,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 14,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 15,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 16,
+          "reason": "blank"
+        },
+        {
+          "page": 122,
+          "reason": "blank"
+        },
+        {
+          "page": 123,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 124,
+          "reason": "blank"
+        },
+        {
+          "page": 125,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 126,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 127,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 128,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 129,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 130,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 131,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 132,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 133,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 134,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 135,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 136,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 359,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 360,
+          "reason": "blank"
+        },
+        {
+          "page": 361,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 362,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 363,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 364,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 402,
+          "reason": "blank"
+        },
+        {
+          "page": 403,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 404,
+          "reason": "blank"
+        },
+        {
+          "page": 405,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 406,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 407,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 408,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 409,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 410,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 474,
+          "reason": "blank"
+        },
+        {
+          "page": 475,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 476,
+          "reason": "blank"
+        },
+        {
+          "page": 477,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 478,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 479,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 480,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 481,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 482,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 483,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 484,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 485,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 486,
+          "reason": "blank"
+        },
+        {
+          "page": 571,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 572,
+          "reason": "blank"
+        },
+        {
+          "page": 573,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 574,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 587,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 588,
+          "reason": "blank"
+        },
+        {
+          "page": 589,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 590,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 591,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 592,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 593,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 594,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 595,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 596,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 597,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 598,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 599,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 600,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 601,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 602,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 603,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 604,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 605,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 606,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 607,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 608,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 609,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 610,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 611,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 612,
+          "reason": "front_matter_toc_or_index"
+        },
+        {
+          "page": 613,
+          "reason": "front_matter_toc_or_index"
+        }
+      ],
+      "chapters": {
+        "part:1/chapter:1": 97,
+        "part:1/chapter:2": 52,
+        "part:1/chapter:3": 94,
+        "part:1/chapter:4": 35,
+        "part:2/chapter:1": 20,
+        "part:2/chapter:2": 22,
+        "part:2/chapter:3": 36,
+        "part:2/chapter:4": 33,
+        "part:2/chapter:5": 11,
+        "part:2/chapter:6": 15,
+        "part:2/chapter:7": 51,
+        "part:2/chapter:8": 83,
+        "part:2/chapter:9": 15,
+        "part:2/chapter:10": 78,
+        "part:2/chapter:11": 23,
+        "part:3/chapter:1": 84,
+        "part:3/chapter:2": 16,
+        "part:4/chapter:1": 21,
+        "part:4/chapter:2": 21,
+        "part:4/chapter:3": 38,
+        "part:4/chapter:4": 18,
+        "part:4/chapter:5": 39,
+        "part:4/chapter:6": 5,
+        "part:4/chapter:7": 6,
+        "part:4/chapter:8": 19,
+        "part:5/chapter:1": 21,
+        "part:5/chapter:2": 22,
+        "part:5/chapter:3": 16,
+        "part:5/chapter:4": 14,
+        "part:5/chapter:5": 22,
+        "part:5/chapter:6": 18,
+        "part:5/chapter:7": 43,
+        "part:5/chapter:8": 50,
+        "part:5/chapter:9": 36,
+        "part:5/chapter:10": 25,
+        "part:5/chapter:11": 14,
+        "part:6/chapter:1": 24,
+        "part:6/chapter:2": 35
+      },
+      "text_chars": 377272
+    }
+  ],
+  "total_chunks": 1666,
+  "coverage": "文字正文；未恢复图片、复杂表格和公式语义。原始 PDF 可按物理页查阅。未核验现行有效性。"
+}

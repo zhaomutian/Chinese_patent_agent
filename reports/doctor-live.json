@@ -1,0 +1,97 @@
+{
+  "live": true,
+  "ok": true,
+  "checks": [
+    {
+      "name": "local_graph_sqlite_chroma",
+      "ok": true,
+      "seconds": 0.7,
+      "details": {
+        "checkpoint": "persisted",
+        "chroma": "explicit vectors passed"
+      }
+    },
+    {
+      "name": "responses_text",
+      "ok": true,
+      "seconds": 2.48,
+      "details": {
+        "usage": {
+          "input_tokens": 4132,
+          "output_tokens": 6,
+          "total_tokens": 4138,
+          "input_token_details": {
+            "cache_creation": 0,
+            "cache_read": 3968
+          },
+          "output_token_details": {
+            "reasoning": 0
+          }
+        },
+        "response_status": "completed",
+        "has_text": true
+      }
+    },
+    {
+      "name": "responses_single_tool",
+      "ok": true,
+      "seconds": 5.91,
+      "details": {
+        "call_count": 1,
+        "roundtrip": true,
+        "usage": {
+          "input_tokens": 4226,
+          "output_tokens": 5,
+          "total_tokens": 4231,
+          "input_token_details": {
+            "cache_creation": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "reasoning": 0
+          }
+        }
+      }
+    },
+    {
+      "name": "responses_multiple_tools",
+      "ok": true,
+      "seconds": 8.58,
+      "details": {
+        "call_count": 2,
+        "roundtrip": true,
+        "usage": {
+          "input_tokens": 4322,
+          "output_tokens": 22,
+          "total_tokens": 4344,
+          "input_token_details": {
+            "cache_creation": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "reasoning": 0
+          }
+        }
+      }
+    },
+    {
+      "name": "json_output",
+      "ok": true,
+      "seconds": 2.75,
+      "details": {
+        "json_valid": true
+      }
+    },
+    {
+      "name": "embedding_single_batch",
+      "ok": true,
+      "seconds": 0.52,
+      "details": {
+        "dimensions": 1024,
+        "ordered": true,
+        "requests": 2,
+        "tokens": 30
+      }
+    }
+  ]
+}
