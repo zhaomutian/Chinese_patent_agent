@@ -14,6 +14,7 @@ snapshot = active_snapshot(s)["id"]
 kb = KnowledgeBase(s, snapshot)
 cases = json.loads((ROOT / "eval/cases.json").read_text())
 out = ROOT / "reports/evaluation.jsonl"
+out.parent.mkdir(parents=True, exist_ok=True)
 previous = [json.loads(line) for line in out.read_text().splitlines()] if out.exists() else []
 completed = {r["id"] for r in previous if r["snapshot_id"] == snapshot}
 threads = {

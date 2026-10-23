@@ -76,7 +76,7 @@ with st.sidebar:
             st.query_params["session"] = created["session_id"]
             st.session_state.turns = []
             st.rerun()
-    st.caption("本地学习项目 · 回答用于资料检索与理解")
+    st.caption("回答用于资料检索与理解")
 
 if not knowledge or knowledge.get("status") != "ready":
     st.warning("知识库尚未就绪，请先完成资料解析和索引。")

@@ -128,6 +128,7 @@ def build_index(s):
         "embedding_tokens": emb.tokens,
         "reused_chunks": len(existing),
     }
+    (ROOT / "reports").mkdir(parents=True, exist_ok=True)
     (ROOT / "reports/index.json").write_text(json.dumps(report, ensure_ascii=False, indent=2))
     return report
 

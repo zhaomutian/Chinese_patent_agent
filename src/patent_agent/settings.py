@@ -76,7 +76,7 @@ class Settings(BaseSettings):
         if not self.chat_api_key.get_secret_value() or not self.embedding_api_key.get_secret_value():
             raise ValueError("请在 .env 填写两项 API 密钥")
         if self.chat_provider != "openai_compatible" or self.embedding_provider != "openai_compatible":
-            raise ValueError("此初版仅支持 OpenAI compatible API")
+            raise ValueError("当前应用仅支持 OpenAI compatible API")
         if self.embedding_encoding_format != "float":
             raise ValueError("当前向量适配器需要 float 编码")
         if self.chat_model == "gpt-6-astra" and self.chat_send_temperature:
@@ -88,9 +88,9 @@ class Settings(BaseSettings):
         if not 0 <= self.chunk_overlap_chars < self.chunk_target_chars <= self.chunk_max_chars:
             raise ValueError("分块长度配置不合法")
         if self.log_full_model_payloads or self.langsmith_tracing:
-            raise ValueError("此初版仅实现本地脱敏日志；完整载荷和云端 tracing 应保持关闭")
+            raise ValueError("当前应用仅实现本地脱敏日志；完整载荷和云端 tracing 应保持关闭")
         if self.app_max_concurrent_runs != 1:
-            raise ValueError("此初版仅支持单进程单并发")
+            raise ValueError("当前应用仅支持单进程单并发")
         for name in (
             "sources_manifest_path",
             "raw_data_dir",

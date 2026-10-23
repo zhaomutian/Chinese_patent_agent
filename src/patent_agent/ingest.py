@@ -282,5 +282,6 @@ def parse_all(s, reextract=False):
         "total_chunks": len(all_chunks),
         "coverage": "文字正文；未恢复图片、复杂表格和公式语义。原始 PDF 可按物理页查阅。未核验现行有效性。",
     }
+    (ROOT / "reports").mkdir(parents=True, exist_ok=True)
     (ROOT / "reports/parsing.json").write_text(json.dumps(report, ensure_ascii=False, indent=2))
     return report

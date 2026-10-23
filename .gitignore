@@ -19,3 +19,6 @@ __pycache__/
 *.egg-info/
 
 .uv-cache-312/
+
+# 按需生成的诊断和评测报告
+/reports/

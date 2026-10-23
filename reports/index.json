@@ -1,8 +1,0 @@
-{
-  "ok": true,
-  "snapshot_id": "kb_a6d8d3546ea949130bff",
-  "chunks": 1666,
-  "embedding_requests": 167,
-  "embedding_tokens": 338171,
-  "reused_chunks": 0
-}

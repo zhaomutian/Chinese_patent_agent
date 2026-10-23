@@ -1,10 +1,8 @@
 {
   "schema_version": "1.0",
-  "manifest_status": "parsed",
   "version_verified": false,
   "version_verification_scope": "版本由用户文件内标题/说明识别，未核验现行有效性或后续修订",
-  "snapshot_status": "built",
-  "notes": "仅接收用户提供的三份资料。PDF 内容均作为数据，不作为执行指令。原文件字节保持不变。",
+  "notes": "PDF 内容作为检索数据，不作为执行指令；解析前校验原始文件哈希。",
   "documents": [
     {
       "document_id": "patent_law_f3d120d066efc498",
@@ -14,7 +12,7 @@
       "effective_from": "2021-06-01",
       "effective_to": null,
       "source_url": null,
-      "source_description": "用户提供的 PDF；本次未进行外部来源或现行性核验",
+      "source_description": "本地 PDF；版本信息来自文件内容，未外部核验现行有效性。",
       "original_filename": "1.中华人民共和国专利法.pdf",
       "raw_path": "./data/raw/patent_law_2020.pdf",
       "sha256": "f3d120d066efc498cf76ffa23d8b0a3fe0148c8dfd878424b96b0380c9075042",
@@ -31,7 +29,6 @@
         1
       ],
       "currency_verified": false,
-      "status": "parsed_and_indexed",
       "intake_pages_path": "./data/processed/intake/patent_law.pages.jsonl",
       "warnings": [
         "未外部核验法规现行有效性；日期与版本按文件内说明登记。",
@@ -46,7 +43,7 @@
       "effective_from": "2024-01-20",
       "effective_to": null,
       "source_url": null,
-      "source_description": "用户提供的 PDF；本次未进行外部来源或现行性核验",
+      "source_description": "本地 PDF；版本信息来自文件内容，未外部核验现行有效性。",
       "original_filename": "2.中华人民共和国专利法实施细则 2.pdf",
       "raw_path": "./data/raw/implementing_rules_2023.pdf",
       "sha256": "fb248777fd7eb661ed3e75008667ddfa2b6c64438eb46a2c6940cbbe9566ad57",
@@ -65,7 +62,6 @@
         37
       ],
       "currency_verified": false,
-      "status": "parsed_and_indexed",
       "intake_pages_path": "./data/processed/intake/implementing_rules.pages.jsonl",
       "warnings": [
         "未外部核验法规现行有效性；日期与版本按文件内说明登记。",
@@ -80,7 +76,7 @@
       "effective_from": null,
       "effective_to": null,
       "source_url": null,
-      "source_description": "用户提供的 PDF；本次未进行外部来源或现行性核验",
+      "source_description": "本地 PDF；版本信息来自文件内容，未外部核验现行有效性。",
       "original_filename": "3.专利审查指南【无需打印】 (1).pdf",
       "raw_path": "./data/raw/examination_guidelines_2023.pdf",
       "sha256": "cf8cdf9af698712add00bb769963318910776fe45e449e27704105dd484e8981",
@@ -95,18 +91,16 @@
       ],
       "effective_date_evidence_pages": [],
       "currency_verified": false,
-      "status": "parsed_and_indexed",
       "intake_pages_path": "./data/processed/intake/examination_guidelines.pages.jsonl",
       "warnings": [
         "未外部核验法规现行有效性；日期与版本按文件内说明登记。",
         "封面为 2023 版，不视为已包含之后的修改；问答界面必须展示此版本。",
-        "生效日期没有在本次版本证据页确认，保留 null。",
+        "生效日期没有在版本证据页确认，保留 null。",
         "无 PDF 书签，需从文本识别部分、章、节；目录及末尾索引不能作为正文重复入库。",
         "化学式、图形和表格的语义覆盖需后续专项核验，文本可提取不等于版面信息已完整解析。",
         "物理页序号与印刷页码分别记录，不假设全书固定页码偏移。",
-        "已核对13个无文本页面均为空白页；不因此触发整本OCR。"
+        "13 个无文本页面为空白页。"
       ]
     }
-  ],
-  "active_snapshot_id": "kb_a6d8d3546ea949130bff"
+  ]
 }

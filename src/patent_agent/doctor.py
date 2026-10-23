@@ -46,6 +46,7 @@ def doctor(s, live=False):
         import chromadb
         from chromadb.config import Settings as ChromaSettings
 
+        (ROOT / "tmp").mkdir(parents=True, exist_ok=True)
         with tempfile.TemporaryDirectory(dir=ROOT / "tmp") as tmp:
             conn = sqlite3.connect(str(Path(tmp) / "checkpoint.db"), check_same_thread=False)
             try:
@@ -136,6 +137,7 @@ def doctor(s, live=False):
 
         check("embedding_single_batch", vectors)
     report = {"live": live, "ok": all(c["ok"] for c in checks), "checks": checks}
+    (ROOT / "reports").mkdir(parents=True, exist_ok=True)
     (ROOT / "reports" / ("doctor-live.json" if live else "doctor-static.json")).write_text(
         json.dumps(report, ensure_ascii=False, indent=2)
     )

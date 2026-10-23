@@ -1,16 +1,16 @@
 # 本地配置与外部依赖
 
-配置文件仅使用项目根目录 `.env`。真实文件权限为 `600`，已被 Git 忽略。`.env.example` 是可以公开的中文填写模板；不要将真实密钥填进模板。
+配置文件仅使用项目根目录 `.env`。建议通过 `chmod 600 .env` 限制文件权限；该文件已被 Git 忽略。`.env.example` 是可以公开的中文填写模板；不要将真实密钥填进模板。
 
 | 依赖 | 是否必须 | 当前用途 |
 |---|---|---|
 | 对话平台 Base URL / API Key | 必须 | `gpt-6-astra` 的 Responses、函数调用和 JSON 输出 |
 | 硅基流动 API Key | 必须 | `Pro/BAAI/bge-m3` 文本向量化 |
-| Python、uv | 必须 | 本地环境和依赖锁定；实测 Python 3.12.13 |
+| Python、uv | 必须 | 本地环境和依赖锁定；推荐 Python 3.12 |
 | Poppler / pdftotext | 重新提取 PDF 时需要 | 保留版式的逐页文字提取 |
 | Chroma、SQLite | 必须，无外部账号 | 都运行在本地；随 Python 依赖安装 |
 | LangSmith | 不需要 | 当前适配器明确关闭云端追踪，未实现该可选集成 |
-| 云服务器、Redis、Docker、额外数据库账号 | 不需要 | 初版未依赖 |
+| 云服务器、Redis、Docker、额外数据库账号 | 不需要 | 无需配置 |
 
 ## 必填位置
 
@@ -23,7 +23,7 @@ CHAT_API_KEY=
 EMBEDDING_API_KEY=
 ```
 
-其他当前确定配置：
+模板默认配置：
 
 ```dotenv
 CHAT_API_MODE=responses
@@ -46,16 +46,16 @@ LANGSMITH_TRACING=false
 - `CHUNK_TARGET_CHARS / CHUNK_MAX_CHARS / CHUNK_OVERLAP_CHARS`：默认 700 / 1200 / 100。修改后重新 parse 和 index，生成新快照。
 - `RETRIEVAL_TOP_K / RETRIEVAL_PER_SOURCE_K`：默认总召回 8、每来源 4；检索会优先保留所请求来源的最佳结果，再按距离补足。
 - `CONTEXT_MAX_CHUNKS / CONTEXT_MAX_CHARS`：默认最终 6 个完整片段、最多 10,000 字符；实际模型输入还包含指令、工具协议和少量历史消息。
-- `MAX_RETRIEVAL_ROUNDS / MAX_TOOLS_PER_ROUND / MAX_CITATION_REPAIRS`：默认 2 / 2 / 1，初版限制不得扩大。
+- `MAX_RETRIEVAL_ROUNDS / MAX_TOOLS_PER_ROUND / MAX_CITATION_REPAIRS`：默认 2 / 2 / 1，配置上限分别为 2 / 2 / 1。
 - `CHAT_HISTORY_TURNS`：默认向模型提供最近 4 轮已完成问答；历史内容不自动作为证据。
 - `MODEL_TIMEOUT_SECONDS / MODEL_MAX_RETRIES`：默认每次请求 45 秒、最多重试 2 次。各适配器只有一层重试；认证错误不进行向量请求重试。
 - `RUN_TIMEOUT_SECONDS`：默认 180 秒，节点和请求预算共同控制；并非进程级强制中止。
-- `APP_MAX_CONCURRENT_RUNS`：初版只接受 1。后端也只使用 1 个 worker。
+- `APP_MAX_CONCURRENT_RUNS`：只接受 1。后端也只使用 1 个 worker。
 - `API_HOST / API_PORT / UI_HOST / UI_PORT / API_BASE_URL`：默认本机 8000 / 8501，页面通过 `API_BASE_URL` 请求后端。
 - 数据路径相对于项目根目录解析；`SOURCES_MANIFEST_PATH` 指向资料清单，`RAW_DATA_DIR` 约束原 PDF 服务目录，`PROCESSED_DATA_DIR` 保存正文和片段，SQLite、Chroma 与日志均在 `data/` 下。
 - `LOG_LEVEL` 控制本地元数据日志；`LOG_FULL_MODEL_PAYLOADS` 必须为 false。云端 tracing 相关字段保留在模板中，但当前只支持关闭状态。
 
-`APP_ENV` 标记运行环境，不代表已经实现不同环境的部署策略。全量 54 个变量及其默认值见 `.env.example` 和 `src/patent_agent/settings.py`。
+`APP_ENV` 标记运行环境，不代表已经实现不同环境的部署策略。配置项及其默认值见 `.env.example` 和 `src/patent_agent/settings.py`。
 
 ## 诊断顺序
 
