@@ -16,6 +16,8 @@ def main():
     p = sub.add_parser("ask")
     p.add_argument("question")
     p.add_argument("--session")
+    p.add_argument("--mode", choices=["auto", "lookup", "analyze"], default="auto")
+    p.add_argument("--explanation", choices=["hint", "concise", "detailed"])
     args = parser.parse_args()
     try:
         s = Settings()
@@ -45,7 +47,7 @@ def main():
 
             with AgentService(s) as svc:
                 sid = args.session or svc.create_session()["session_id"]
-                result = svc.ask(sid, args.question)
+                result = svc.ask(sid, args.question, args.mode, args.explanation)
         print(json.dumps(result, ensure_ascii=False, indent=2))
         if result.get("ok") is False:
             raise SystemExit(1)

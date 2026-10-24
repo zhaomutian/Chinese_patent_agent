@@ -57,7 +57,16 @@ class Settings(BaseSettings):
     run_timeout_seconds: float = 180
     app_max_concurrent_runs: int = 1
     chat_history_turns: int = 4
-    question_max_chars: int = 2000
+    question_max_chars: int = Field(default=6000, ge=1, le=12000)
+    exam_analysis_enabled: bool = True
+    teaching_methods_path: Path = Path("data/teaching/methods")
+    teaching_max_methods: int = Field(default=2, ge=0, le=2)
+    teaching_context_max_chars: int = Field(default=3000, ge=200, le=8000)
+    exam_max_retrieval_rounds: int = Field(default=3, ge=1, le=4)
+    exam_max_model_calls: int = Field(default=8, ge=1, le=12)
+    exam_max_output_tokens: int = Field(default=5000, ge=1000, le=8000)
+    exam_completion_reserve_seconds: float = Field(default=60, ge=15, le=120)
+    exam_max_analysis_repairs: int = Field(default=1, ge=0, le=1)
     langsmith_tracing: bool = False
     langsmith_api_key: SecretStr = SecretStr("")
     langsmith_project: str = "patent-law-agent"
@@ -99,6 +108,7 @@ class Settings(BaseSettings):
             "catalog_db_path",
             "checkpoint_db_path",
             "log_dir",
+            "teaching_methods_path",
         ):
             value = getattr(self, name)
             setattr(self, name, value if value.is_absolute() else ROOT / value)

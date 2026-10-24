@@ -1,5 +1,6 @@
 import json
 from contextlib import asynccontextmanager
+from typing import Literal
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse
@@ -25,7 +26,9 @@ app = FastAPI(title="中国专利知识库助手", version="0.1.0", lifespan=lif
 
 class ChatRequest(BaseModel):
     session_id: str = Field(pattern=r"^[a-f0-9]{32}$")
-    question: str = Field(min_length=1, max_length=2000)
+    question: str = Field(min_length=1, max_length=12000)
+    mode: Literal["auto", "lookup", "analyze"] = "auto"
+    explanation_level: Literal["hint", "concise", "detailed"] | None = None
 
 
 def kb(request, snapshot_id):
@@ -80,9 +83,10 @@ def knowledge_base(request: Request):
                     "warnings",
                 )
             }
+            | {k: d.get(k) for k in ("source_url", "language", "effective_from", "legal_status_note")}
             for d in payload["documents"]
         ],
-        "scope_note": "仅依据用户提供版本；未核验后续修订。图片、复杂公式和表格需结合原 PDF。",
+        "scope_note": "国内法规与指定官方条约按各自版本收录；未统一核验现行性、缔约状态或声明。图片、复杂公式和表格需结合原 PDF。",
     }
 
 
@@ -105,13 +109,15 @@ def session(session_id: str, request: Request):
 @app.post("/api/v1/chat")
 def chat(body: ChatRequest, request: Request):
     try:
-        return request.app.state.service.ask(body.session_id, body.question)
+        return request.app.state.service.ask(
+            body.session_id, body.question, body.mode, body.explanation_level
+        )
     except KeyError:
         raise HTTPException(404, "会话不存在") from None
     except BusyError:
         raise HTTPException(429, "当前正在处理另一个问题，请稍后重试") from None
     except ValueError:
-        raise HTTPException(400, "问题为空或超过长度限制") from None
+        raise HTTPException(400, "问题为空、超过长度限制或所选模式未启用") from None
     except Exception as exc:
         raise HTTPException(503, "问答暂时失败：" + safe_error(exc)) from None
 

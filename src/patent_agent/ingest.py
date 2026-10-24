@@ -1,4 +1,4 @@
-"""Parser for the three supplied PDFs; unsupported layouts require new parser validation."""
+"""Parse reviewed domestic and treaty PDFs with source-specific structural validation."""
 
 import hashlib
 import json
@@ -61,6 +61,10 @@ def load_pages(doc, reextract=False):
 
 
 def parse_document(doc, pages):
+    if doc.get("parser") == "official_treaties":
+        from .treaties import parse_treaty
+
+        return parse_treaty(doc, pages)
     provisions, excluded = [], []
     current = None
     chapter = ""
@@ -207,28 +211,36 @@ def chunk_provision(p, s):
                 end = stops[0]
         pages = sorted({pnum for a, b, pnum in spans if b > start and a < end})
         body = text[start:end]
-        yield {
-            k: p[k]
-            for k in (
-                "document_id",
-                "source_type",
-                "locator",
-                "heading",
-                "chapter",
-                "title",
-                "version_label",
-                "coverage_warnings",
-            )
-        } | {
-            "id": "c_" + digest(p["id"] + str(start) + body)[:24],
-            "provision_id": p["id"],
-            "text": body,
-            "char_start": start,
-            "char_end": end,
-            "pages": pages,
-            "page_start": min(pages),
-            "page_end": max(pages),
-        }
+        yield (
+            {
+                k: p[k]
+                for k in (
+                    "document_id",
+                    "source_type",
+                    "locator",
+                    "heading",
+                    "chapter",
+                    "title",
+                    "version_label",
+                    "coverage_warnings",
+                )
+            }
+            | {
+                key: p[key]
+                for key in ("source_url", "language", "effective_from", "legal_status_note")
+                if key in p
+            }
+            | {
+                "id": "c_" + digest(p["id"] + str(start) + body)[:24],
+                "provision_id": p["id"],
+                "text": body,
+                "char_start": start,
+                "char_end": end,
+                "pages": pages,
+                "page_start": min(pages),
+                "page_end": max(pages),
+            }
+        )
         if end == len(text):
             break
         start = end - s.chunk_overlap_chars

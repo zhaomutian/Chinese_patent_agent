@@ -17,7 +17,9 @@ def test_health_metadata_sources_and_request_validation(monkeypatch):
         ready = client.get("/health/ready")
         assert ready.status_code == 200
         knowledge = client.get("/api/v1/knowledge-base").json()
-        assert len(knowledge["documents"]) == 3
+        assert {"patent_law", "implementing_rules", "examination_guidelines"} <= {
+            d["source_type"] for d in knowledge["documents"]
+        }
         created = client.post("/api/v1/sessions")
         assert created.status_code == 201
         sid = created.json()["session_id"]

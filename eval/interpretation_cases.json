@@ -1,0 +1,26 @@
+[
+  {
+    "question_id": "synthetic-scope",
+    "source": "synthetic",
+    "question_type": "multiple_choice",
+    "reference_answer": "AB",
+    "stem": "仅依据《专利法》第20条第1款的规范范围，判断下列说法哪些正确？（多选）",
+    "options": {
+      "A": "申请人在初步审查中提交与专利申请有关的陈述，应当遵循诚实信用原则。",
+      "B": "专利权人在行使专利权进行许可时，应当遵循诚实信用原则。",
+      "C": "因为该款没有逐项列举实质审查，所以申请人在实质审查中不受该原则约束。"
+    }
+  },
+  {
+    "question_id": "synthetic-overreach",
+    "source": "synthetic",
+    "question_type": "single_choice",
+    "reference_answer": "C",
+    "stem": "仅判断《专利法》第20条第1款能否支持以下结论，下列哪项正确？（单选）",
+    "options": {
+      "A": "该款明确规定违反诚实信用原则的主体一律处50万元罚款。",
+      "B": "仅凭该款就能认定专利纠纷中的全部诉讼参与人（包括证人、翻译人员）都属于正在行使专利权的主体。",
+      "C": "申请专利和行使专利权均应遵循诚实信用原则，但具体处罚不能仅由该原则条款直接推导。"
+    }
+  }
+]

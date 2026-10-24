@@ -10,6 +10,7 @@
 | Poppler / pdftotext | 重新提取 PDF 时需要 | 保留版式的逐页文字提取 |
 | Chroma、SQLite | 必须，无外部账号 | 都运行在本地；随 Python 依赖安装 |
 | LangSmith | 不需要 | 当前适配器明确关闭云端追踪，未实现该可选集成 |
+| WIPO / WTO 官方网站 | 下载国际条约原件时需要 | 无需账号；下载器按清单校验文件哈希 |
 | 云服务器、Redis、Docker、额外数据库账号 | 不需要 | 无需配置 |
 
 ## 必填位置
@@ -44,10 +45,17 @@ LANGSMITH_TRACING=false
 
 - `EMBEDDING_BATCH_SIZE`：建库批大小，默认 10；影响请求数量与失败后的重做范围。
 - `CHUNK_TARGET_CHARS / CHUNK_MAX_CHARS / CHUNK_OVERLAP_CHARS`：默认 700 / 1200 / 100。修改后重新 parse 和 index，生成新快照。
-- `RETRIEVAL_TOP_K / RETRIEVAL_PER_SOURCE_K`：默认总召回 8、每来源 4；检索会优先保留所请求来源的最佳结果，再按距离补足。
+- `RETRIEVAL_TOP_K / RETRIEVAL_PER_SOURCE_K`：默认总召回 8、每来源 4；未限定来源或指定来源数量超过总召回上限时，按相关度取结果。明确指定少量来源时，先保留各来源的最佳结果，再按距离补足；不会按清单顺序截掉排在后面的条约。
 - `CONTEXT_MAX_CHUNKS / CONTEXT_MAX_CHARS`：默认最终 16 个完整片段、最多 10,000 字符；实际模型输入还包含指令、工具协议和少量历史消息。
 - `MAX_RETRIEVAL_ROUNDS / MAX_TOOLS_PER_ROUND / MAX_CITATION_REPAIRS`：默认 2 / 2 / 1，配置上限分别为 2 / 2 / 1。
 - 精确批量工具 `get_provisions`：每次最多 8 个条文或小节，逐项检查时间预算；按工具调用计入每轮上限，目标结果单独记录。证据缺口清单由程序直接安排补查，未找到或未完整纳入上下文的目标保留为限制。
+- `EXAM_ANALYSIS_ENABLED`：默认 true；关闭后只保留法规查询。题目分析复用现有密钥，不需要额外平台。
+- `QUESTION_MAX_CHARS`：默认 6000，API 硬上限 12000，运行时仍按配置限制；用于容纳题干和选项。
+- `TEACHING_METHODS_PATH`：默认 `data/teaching/methods`，保存内容哈希命名的方法包和 `active.json`；不提交教材派生内容。
+- `TEACHING_MAX_METHODS / TEACHING_CONTEXT_MAX_CHARS`：每题最多 2 张章节卡和 1 张解释方法卡、共 3000 字符；不截断卡片，超出则不选入。
+- `EXAM_MAX_RETRIEVAL_ROUNDS`：题目分析默认 3 轮、最多 4 轮，包含首次检索；普通查询仍使用 `MAX_RETRIEVAL_ROUNDS`。
+- `EXAM_COMPLETION_RESERVE_SECONDS`：默认60秒；补查前保留最终分析和解释审核的时间。审核触发的回查最多一次，仍共用检索轮数与模型调用预算，不是进程级强制超时。
+- `EXAM_MAX_MODEL_CALLS / EXAM_MAX_OUTPUT_TOKENS / EXAM_MAX_ANALYSIS_REPAIRS`：默认 8 / 5000 / 1；调用数包含审题、检索规划、证据检查、分析修复和解释审核，SDK 重试另受 `MODEL_MAX_RETRIES` 约束。与检索共用 `RUN_TIMEOUT_SECONDS`，预算耗尽不输出确定答案。
 - `CHAT_HISTORY_TURNS`：默认向模型提供最近 4 轮已完成问答；历史内容不自动作为证据。
 - `MODEL_TIMEOUT_SECONDS / MODEL_MAX_RETRIES`：默认每次请求 45 秒、最多重试 2 次。各适配器只有一层重试；认证错误不进行向量请求重试。
 - `RUN_TIMEOUT_SECONDS`：默认 180 秒，节点和请求预算共同控制；并非进程级强制中止。
@@ -57,6 +65,14 @@ LANGSMITH_TRACING=false
 - `LOG_LEVEL` 控制本地元数据日志；`LOG_FULL_MODEL_PAYLOADS` 必须为 false。云端 tracing 相关字段保留在模板中，但当前只支持关闭状态。
 
 `APP_ENV` 标记运行环境，不代表已经实现不同环境的部署策略。配置项及其默认值见 `.env.example` 和 `src/patent_agent/settings.py`。
+
+## 国际条约与数据更新
+
+国际资料复用现有 API 和数据库，无需新增密钥。`scripts/download_treaties.py` 只从清单指定的 WIPO/WTO 来源恢复原件并校验哈希；`parse` 在本地提取正文；`index` 会将新增片段发送到 `EMBEDDING_BASE_URL`，产生 API 用量。模型、维度、接口地址及片段标识均一致时可复用已有向量。
+
+官方文件发生变化时，下载器会停止，需核验版本、页码及条号后更新 `config/sources.manifest.json`。不要跳过哈希检查，也不要将修正日期直接作为对每个缔约方的生效日期。详见[国际资料说明](docs/INTERNATIONAL_SOURCES.md)。
+
+更新索引后，新会话使用新快照，旧会话继续使用原快照。复制或备份环境时保留完整 `data/`，包括旧快照对应的 PDF 和方法包。
 
 ## 诊断顺序
 

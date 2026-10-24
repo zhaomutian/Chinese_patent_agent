@@ -8,9 +8,8 @@ from chromadb.config import Settings as ChromaSettings
 from .ingest import PARSER_VERSION, digest
 from .models import Embeddings, safe_error
 from .settings import ROOT
+from .sources import SOURCES
 from .storage import connect, dump
-
-SOURCES = ("patent_law", "implementing_rules", "examination_guidelines")
 
 
 def client(s):
@@ -79,7 +78,35 @@ def build_index(s):
         db.execute("INSERT INTO ingestion_runs VALUES (?,?,?,?,?)", (runid, sid, "building", 0, None))
     existing = set(col.get(include=[])["ids"])
     emb = Embeddings(s)
+    copied = 0
     try:
+        # Identical chunk IDs and embedding configuration can reuse archived vectors.
+        with connect(s) as db:
+            previous = db.execute(
+                "SELECT collection,payload FROM snapshots WHERE id<>? AND status IN ('active','archived') ORDER BY created_at DESC",
+                (sid,),
+            ).fetchall()
+        needed = {c["id"] for c in chunks} - existing
+        for prior in previous:
+            if not needed or json.loads(prior["payload"]).get("embedding") != embedding_identity(s):
+                continue
+            source = cl.get_collection(prior["collection"], embedding_function=None)
+            matching = sorted(needed & set(source.get(include=[])["ids"]))
+            for offset in range(0, len(matching), 100):
+                rows = source.get(
+                    ids=matching[offset : offset + 100], include=["embeddings", "documents", "metadatas"]
+                )
+                col.upsert(
+                    ids=rows["ids"],
+                    embeddings=rows["embeddings"],
+                    documents=rows["documents"],
+                    metadatas=rows["metadatas"],
+                )
+                existing.update(rows["ids"])
+                needed.difference_update(rows["ids"])
+                copied += len(rows["ids"])
+        if copied:
+            print(dump({"event": "reuse_vectors", "chunks": copied}), flush=True)
         pending = [c for c in chunks if c["id"] not in existing]
         for offset in range(0, len(pending), s.embedding_batch_size):
             batch = pending[offset : offset + s.embedding_batch_size]
@@ -127,6 +154,7 @@ def build_index(s):
         "embedding_requests": emb.requests,
         "embedding_tokens": emb.tokens,
         "reused_chunks": len(existing),
+        "copied_from_previous_snapshot": copied,
     }
     (ROOT / "reports").mkdir(parents=True, exist_ok=True)
     (ROOT / "reports/index.json").write_text(json.dumps(report, ensure_ascii=False, indent=2))
@@ -178,8 +206,26 @@ class KnowledgeBase:
                 "message": "审查指南请指定部分、章、节，例如 part:2/chapter:4/section:3.2.1",
                 "evidence": [],
             }
-        if source_type != "examination_guidelines" and not re.fullmatch(r"article:\d+", locator):
-            return {"status": "clarify", "message": "请使用 article:22 等条文编号", "evidence": []}
+        if source_type != "examination_guidelines":
+            if source_type in ("patent_law", "implementing_rules"):
+                pattern = r"article:\d+"
+            else:
+                unit = (
+                    "rule"
+                    if source_type.endswith("_regulations")
+                    else "section"
+                    if source_type.endswith("_instructions")
+                    else "article"
+                )
+                pattern = (
+                    unit + r":\d+(?:bis|ter|quater|quinquies|sexies|septies)?|preamble|appendix:page:\d+"
+                )
+            if not re.fullmatch(pattern, locator):
+                return {
+                    "status": "clarify",
+                    "message": "请按资料使用 article:4bis、rule:13bis、section:101 或 appendix:page:70。",
+                    "evidence": [],
+                }
         with connect(self.s) as db:
             rows = db.execute(
                 "SELECT DISTINCT c.payload FROM provisions p JOIN chunks c ON c.provision_id=p.id JOIN snapshot_chunks sc ON sc.chunk_id=c.id WHERE sc.snapshot_id=? AND p.source_type=? AND (p.locator=? OR p.locator LIKE ?) ORDER BY p.locator,c.id",
@@ -248,6 +294,8 @@ class KnowledgeBase:
         ):
             return {"status": "invalid_arguments", "evidence": []}
         vector = self.emb.encode([query], timeout=timeout)[0]
+        available = {d["source_type"] for d in json.loads(self.snapshot["payload"]).get("documents", [])}
+        types = [t for t in types if t in available]
         candidates = []
         for typ in dict.fromkeys(types):
             found = self.collection.query(
@@ -262,11 +310,13 @@ class KnowledgeBase:
                     candidates.append(c | {"distance": dist})
         candidates.sort(key=lambda c: c["distance"])
         selected = []
-        # First include the best result of each requested source, then fill by distance.
-        for typ in dict.fromkeys(types):
-            best = next((c for c in candidates if c["source_type"] == typ), None)
-            if best:
-                selected.append(best)
+        # Reserve a slot only for a small, explicitly requested set. For a broad
+        # search, source declaration order must never hide later treaties.
+        if source_types and len(set(types)) <= self.s.retrieval_top_k:
+            for typ in dict.fromkeys(types):
+                best = next((c for c in candidates if c["source_type"] == typ), None)
+                if best:
+                    selected.append(best)
         for c in candidates:
             if c["id"] not in {x["id"] for x in selected}:
                 selected.append(c)

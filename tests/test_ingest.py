@@ -12,10 +12,10 @@ def test_real_corpus_structure_and_chunk_provenance():
         pages = load_pages(doc)
         provisions, excluded = parse_document(doc, pages)
         assert len({p["locator"] for p in provisions}) == len(provisions)
-        if doc["source_type"] != "examination_guidelines":
+        if doc["source_type"] in ("patent_law", "implementing_rules"):
             n = 82 if doc["source_type"] == "patent_law" else 148
             assert [p["locator"] for p in provisions] == [f"article:{i}" for i in range(1, n + 1)]
-        else:
+        elif doc["source_type"] == "examination_guidelines":
             assert len({p["locator"].split("/section:")[0].split("/preamble")[0] for p in provisions}) == 38
             assert all(p["page_start"] < 587 for p in provisions)
             assert any(p["locator"] == "part:2/chapter:4/section:3.2.1.2" for p in provisions)
