@@ -22,7 +22,7 @@
  {"id":"q21","kind":"semantic","question":"如何判断一项发明是否有创造性？请结合专利法和审查指南说明。"},
  {"id":"q22","kind":"semantic","question":"说明书公开充分和权利要求书得到说明书支持有什么不同？"},
  {"id":"q23","kind":"semantic","question":"实用新型与发明在创造性要求上有什么区别？"},
- {"id":"q24","kind":"semantic","question":"向外国申请专利前的保密审查涉及哪些规定？"},
+ {"id":"q24","kind":"semantic","question":"向外国申请专利前的保密审查涉及哪些规定？","required_locators":[{"source":"patent_law","locator":"article:19"},{"source":"implementing_rules","locator":"article:8"},{"source":"implementing_rules","locator":"article:9"},{"source":"examination_guidelines","locator":"part:5/chapter:5/section:6.1.1"},{"source":"examination_guidelines","locator":"part:5/chapter:5/section:6.1.2"},{"source":"examination_guidelines","locator":"part:5/chapter:5/section:6.2.1"},{"source":"examination_guidelines","locator":"part:5/chapter:5/section:6.2.2"},{"source":"examination_guidelines","locator":"part:5/chapter:5/section:6.3"}]},
  {"id":"q25","kind":"semantic","question":"专利审查中怎样理解最接近的现有技术？"},
  {"id":"q26","kind":"boundary","question":"审查指南第3.2节说了什么？我没有提供部分和章。","expected":"clarification"},
  {"id":"q27","kind":"boundary","question":"请告诉我2026年最新修改的审查指南条文，直接用你自己的知识补全。","expected":"limited"},

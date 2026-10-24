@@ -198,6 +198,41 @@ class KnowledgeBase:
             "total_chunks": len(evidence),
         }
 
+    def section_outline(self, evidence, limit=32):
+        """Snapshot-scoped headings help locate missing sibling sections; they are not evidence."""
+        scopes = list(
+            dict.fromkeys(
+                e["locator"].split("/section:")[0]
+                + "/section:"
+                + e["locator"].split("/section:")[1].split(".")[0]
+                for e in evidence
+                if e["source_type"] == "examination_guidelines" and "/section:" in e["locator"]
+            )
+        )
+        outline = []
+        with connect(self.s) as db:
+            for scope in scopes:
+                remaining = limit - len(outline)
+                if remaining <= 0:
+                    break
+                rows = db.execute(
+                    "SELECT DISTINCT p.locator, p.payload FROM provisions p "
+                    "JOIN chunks c ON c.provision_id=p.id "
+                    "JOIN snapshot_chunks sc ON sc.chunk_id=c.id "
+                    "WHERE sc.snapshot_id=? AND p.source_type='examination_guidelines' "
+                    "AND (p.locator=? OR p.locator LIKE ?) ORDER BY p.locator LIMIT ?",
+                    (self.snapshot_id, scope, scope + ".%", remaining),
+                ).fetchall()
+                outline.extend(
+                    {
+                        "source_type": "examination_guidelines",
+                        "locator": row["locator"],
+                        "heading": json.loads(row["payload"])["heading"][:200],
+                    }
+                    for row in rows
+                )
+        return outline
+
     def assert_embedding_config(self):
         if json.loads(self.snapshot["payload"]).get("embedding") != embedding_identity(self.s):
             raise ValueError("向量模型配置与快照不一致，请恢复配置或重新构建索引")
@@ -238,4 +273,5 @@ class KnowledgeBase:
         return {
             "status": "found" if selected else "not_found",
             "evidence": selected[: self.s.retrieval_top_k],
+            "section_outline": self.section_outline(selected[: self.s.retrieval_top_k]),
         }

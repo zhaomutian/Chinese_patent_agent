@@ -45,8 +45,9 @@ LANGSMITH_TRACING=false
 - `EMBEDDING_BATCH_SIZE`：建库批大小，默认 10；影响请求数量与失败后的重做范围。
 - `CHUNK_TARGET_CHARS / CHUNK_MAX_CHARS / CHUNK_OVERLAP_CHARS`：默认 700 / 1200 / 100。修改后重新 parse 和 index，生成新快照。
 - `RETRIEVAL_TOP_K / RETRIEVAL_PER_SOURCE_K`：默认总召回 8、每来源 4；检索会优先保留所请求来源的最佳结果，再按距离补足。
-- `CONTEXT_MAX_CHUNKS / CONTEXT_MAX_CHARS`：默认最终 6 个完整片段、最多 10,000 字符；实际模型输入还包含指令、工具协议和少量历史消息。
+- `CONTEXT_MAX_CHUNKS / CONTEXT_MAX_CHARS`：默认最终 16 个完整片段、最多 10,000 字符；实际模型输入还包含指令、工具协议和少量历史消息。
 - `MAX_RETRIEVAL_ROUNDS / MAX_TOOLS_PER_ROUND / MAX_CITATION_REPAIRS`：默认 2 / 2 / 1，配置上限分别为 2 / 2 / 1。
+- 精确批量工具 `get_provisions`：每次最多 8 个条文或小节，逐项检查时间预算；按工具调用计入每轮上限，目标结果单独记录。证据缺口清单由程序直接安排补查，未找到或未完整纳入上下文的目标保留为限制。
 - `CHAT_HISTORY_TURNS`：默认向模型提供最近 4 轮已完成问答；历史内容不自动作为证据。
 - `MODEL_TIMEOUT_SECONDS / MODEL_MAX_RETRIES`：默认每次请求 45 秒、最多重试 2 次。各适配器只有一层重试；认证错误不进行向量请求重试。
 - `RUN_TIMEOUT_SECONDS`：默认 180 秒，节点和请求预算共同控制；并非进程级强制中止。

@@ -48,8 +48,8 @@ class Settings(BaseSettings):
     chunk_overlap_chars: int = 100
     retrieval_top_k: int = 8
     retrieval_per_source_k: int = 4
-    context_max_chunks: int = 6
-    context_max_chars: int = 10000
+    context_max_chunks: int = Field(default=16, ge=1, le=64)
+    context_max_chars: int = Field(default=10000, ge=1)
     max_retrieval_rounds: int = Field(default=2, ge=1, le=2)
     max_tools_per_round: int = Field(default=2, ge=1, le=2)
     max_citation_repairs: int = Field(default=1, ge=0, le=1)

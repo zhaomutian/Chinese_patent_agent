@@ -36,13 +36,6 @@ class Answer(BaseModel):
     quotes: list[Quote] = Field(default_factory=list, max_length=6)
 
 
-class Assessment(BaseModel):
-    sufficient: bool
-    clarify: bool = False
-    reason: str = ""
-    missing_query: str = ""
-
-
 class ExactArgs(BaseModel):
     model_config = ConfigDict(extra="forbid")
     source_type: Literal["patent_law", "implementing_rules", "examination_guidelines"]
@@ -55,7 +48,29 @@ class SearchArgs(BaseModel):
     source_types: list[Literal["patent_law", "implementing_rules", "examination_guidelines"]] | None = None
 
 
+MAX_EXACT_TARGETS = 8
+
+
+class BatchExactArgs(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    targets: list[ExactArgs] = Field(min_length=1, max_length=MAX_EXACT_TARGETS)
+
+
+class Assessment(BaseModel):
+    sufficient: bool
+    clarify: bool = False
+    reason: str = ""
+    missing_query: str = ""
+    missing_provisions: list[ExactArgs] = Field(default_factory=list, max_length=MAX_EXACT_TARGETS)
+    missing_search: SearchArgs | None = None
+
+
 TOOLS = [
+    {
+        "name": "get_provisions",
+        "description": "批量精确查询多个已知条文或指南小节，最多8个目标，逐项返回结果。跨文件补查优先使用；指南必须包含部分、章、节。",
+        "parameters": BatchExactArgs.model_json_schema(),
+    },
     {
         "name": "get_provision",
         "description": "精确定位法规条文或指南小节。法规 locator=article:22；指南必须带部分、章、节，如 part:2/chapter:4/section:3.2.1。返回原文证据。",
@@ -80,6 +95,7 @@ class State(TypedDict, total=False):
     messages: list[Any]
     pending: list[dict]
     evidence: list[dict]
+    retrieval_targets: list[dict]
     rounds: int
     tools_executed: int
     repairs: int
@@ -222,6 +238,7 @@ class AgentService:
             "messages": messages,
             "pending": [],
             "evidence": [],
+            "retrieval_targets": [],
             "rounds": 0,
             "tools_executed": 0,
             "repairs": 0,
@@ -237,6 +254,36 @@ class AgentService:
     def plan(self, st):
         messages = st["messages"][:]
         if st["rounds"]:
+            assessment = Assessment.model_validate(st["assessment"])
+            targets = list(
+                {(t.source_type, t.locator): t.model_dump() for t in assessment.missing_provisions}.values()
+            )
+            calls = []
+            if targets:
+                calls.append({"name": "get_provisions", "args": {"targets": targets}, "id": uuid.uuid4().hex})
+            if assessment.missing_search:
+                calls.append(
+                    {
+                        "name": "search_knowledge",
+                        "args": assessment.missing_search.model_dump(),
+                        "id": uuid.uuid4().hex,
+                    }
+                )
+            if calls:
+                # Execute the assessed gaps directly; a second planner must not silently omit them.
+                msg = AIMessage(content="按证据缺口清单补查。", tool_calls=calls)
+                return {
+                    "messages": messages + [msg],
+                    "pending": msg.tool_calls,
+                    "rounds": st["rounds"] + 1,
+                    "events": self.event(
+                        st,
+                        "plan_tools",
+                        mode="structured_supplement",
+                        requested_tools=[c["name"] for c in calls],
+                        targets=targets,
+                    ),
+                }
             messages.append(
                 HumanMessage(
                     content="证据检查需要一次补查："
@@ -264,20 +311,67 @@ class AgentService:
                 "events": self.event(st, "plan_tools", error=safe_error(exc)),
             }
 
+    def lookup_targets(self, kb, targets, deadline):
+        evidence = {}
+        outcomes = []
+        unique = {(t.source_type, t.locator): t for t in targets}
+        for target in unique.values():
+            result = {"status": "limit", "evidence": []}
+            if time.monotonic() < deadline:
+                try:
+                    result = kb.get_provision(**target.model_dump())
+                except Exception as exc:
+                    result = {"status": "error", "message": safe_error(exc), "evidence": []}
+            found = result.get("evidence", [])
+            evidence.update({e["id"]: e for e in found})
+            outcomes.append(
+                target.model_dump()
+                | {
+                    "lookup_status": result["status"],
+                    "evidence_ids": [e["id"] for e in found],
+                }
+            )
+        return {
+            "status": "found" if all(o["lookup_status"] == "found" for o in outcomes) else "partial",
+            "evidence": list(evidence.values()),
+            "targets": outcomes,
+        }
+
+    @staticmethod
+    def target_coverage(targets, evidence):
+        allowed = {e["id"] for e in evidence}
+        results = []
+        for target in targets:
+            retained = [eid for eid in target["evidence_ids"] if eid in allowed]
+            status = target["lookup_status"]
+            if status == "found":
+                status = (
+                    "included"
+                    if retained and len(retained) == len(target["evidence_ids"])
+                    else "context_limited"
+                )
+            results.append(target | {"status": status, "retained_ids": retained})
+        return results
+
     def execute(self, st):
         evidence = st["evidence"][:]
         outputs = []
         executed = st["tools_executed"]
         events = st["events"][:]
+        targets = {(t["source_type"], t["locator"]): t for t in st.get("retrieval_targets", [])}
         kb = self.kb_factory(st["snapshot_id"])
         for i, call in enumerate(st["pending"]):
             result = {"status": "limit", "message": "本轮工具数或运行时间达到上限", "evidence": []}
             if i < self.s.max_tools_per_round and time.monotonic() < st["deadline"]:
                 try:
-                    if call["name"] == "get_provision":
-                        args = ExactArgs.model_validate(call["args"])
+                    if call["name"] in ("get_provision", "get_provisions"):
+                        batch = (
+                            [ExactArgs.model_validate(call["args"])]
+                            if call["name"] == "get_provision"
+                            else BatchExactArgs.model_validate(call["args"]).targets
+                        )
                         executed += 1
-                        result = kb.get_provision(**args.model_dump())
+                        result = self.lookup_targets(kb, batch, st["deadline"])
                     elif call["name"] == "search_knowledge":
                         args = SearchArgs.model_validate(call["args"])
                         executed += 1
@@ -295,6 +389,22 @@ class AgentService:
                         result = {"status": "invalid_tool", "evidence": []}
                 except Exception as exc:
                     result = {"status": "error", "message": safe_error(exc), "evidence": []}
+            # Keep every scheduled target visible even when the per-round budget blocks its tool call.
+            if "targets" not in result and call["name"] in ("get_provision", "get_provisions"):
+                try:
+                    batch = (
+                        [ExactArgs.model_validate(call["args"])]
+                        if call["name"] == "get_provision"
+                        else BatchExactArgs.model_validate(call["args"]).targets
+                    )
+                    result["targets"] = [
+                        t.model_dump() | {"lookup_status": result["status"], "evidence_ids": []}
+                        for t in batch
+                    ]
+                except ValidationError:
+                    pass
+            for target in result.get("targets", []):
+                targets[(target["source_type"], target["locator"])] = target
             new = result.get("evidence", [])
             # New supplemental evidence is retained preferentially; exact text is never truncated mid-chunk.
             merged = {e["id"]: e for e in new + evidence}
@@ -310,6 +420,8 @@ class AgentService:
             evidence = selected
             allowed = {e["id"] for e in evidence}
             included = [e for e in new if e["id"] in allowed]
+            if "targets" in result:
+                result["targets"] = self.target_coverage(result["targets"], evidence)
             output = {k: v for k, v in result.items() if k != "evidence"} | {
                 "evidence": included,
                 "truncated": len(included) < len(new),
@@ -322,12 +434,15 @@ class AgentService:
                     "status": result["status"],
                     "returned": len(new),
                     "included": len(included),
+                    "targets": result.get("targets", []),
+                    "section_outline": result.get("section_outline", []),
                     "elapsed_seconds": round(time.monotonic() - st["started"], 2),
                 }
             )
         return {
             "messages": st["messages"] + outputs,
             "evidence": evidence,
+            "retrieval_targets": self.target_coverage(list(targets.values()), evidence),
             "tools_executed": executed,
             "pending": [],
             "events": events,
@@ -341,7 +456,13 @@ class AgentService:
                 [
                     SystemMessage(
                         content=POLICY
-                        + "\n检查证据是否足以回答。仅返回符合以下 schema 的 JSON："
+                        + "\n检查证据是否足以回答。缺少明确条文或小节时，必须逐项填写 missing_provisions（最多8项，按必要性排序），"
+                        "已知位置不得只写在 missing_query 中。跨文件问题检查各必要依据，不要只补一个来源。"
+                        "工具的 section_outline 是当前快照的相关章节目录，仅供定位、不能作为证据。"
+                        "先根据目录标题将缺失内容映射到明确小节，填入 missing_provisions；不能把目录视为已查到正文。"
+                        "指南 locator 必须含部分、章、节；目录和证据均无法确定位置时才使用 missing_search，不得猜测。"
+                        "missing_query 仅为缺口说明。已完整纳入的目标不要重复请求；context_limited 表示已找到但上下文未完整保留，"
+                        "此时说明覆盖限制，不要靠重复查询解决。不完整或未找到时 sufficient=false。仅返回符合以下 schema 的 JSON："
                         + dump(schema)
                     ),
                     HumanMessage(
@@ -351,6 +472,7 @@ class AgentService:
                                 "history": self.history_context(st),
                                 "evidence": st["evidence"],
                                 "tools": st["events"],
+                                "retrieval_targets": st.get("retrieval_targets", []),
                             }
                         )
                     ),
@@ -364,6 +486,10 @@ class AgentService:
                 "reason": "证据检查未完成：" + safe_error(exc),
                 "missing_query": st["question"],
             }
+        unresolved = [t for t in st.get("retrieval_targets", []) if t["status"] != "included"]
+        if unresolved or assessment.get("missing_provisions") or assessment.get("missing_search"):
+            assessment["sufficient"] = False
+        assessment["unresolved_targets"] = unresolved
         return {"assessment": assessment, "events": self.event(st, "assess_evidence", **assessment)}
 
     def route_assessment(self, st):
@@ -377,6 +503,7 @@ class AgentService:
         prompt = (
             POLICY
             + "\n只输出符合以下 schema 的 JSON，不输出 Markdown 代码块。事实段落 kind=fact，必须附 evidence_ids（证据 id 原值）。不要生成页码和书名引用，程序会生成。说明资料缺口用 limitation，询问必要信息用 clarification。没有证据时不得输出法律事实。直接引用须与证据逐字一致，否则用释义。\n"
+            + "\nassessment.sufficient=false 时不得标记 supported，必须说明尚未核实的依据或上下文覆盖限制。"
             + dump(Answer.model_json_schema())
         )
         payload = {
@@ -384,6 +511,7 @@ class AgentService:
             "history": self.history_context(st),
             "assessment": st["assessment"],
             "evidence": st["evidence"],
+            "retrieval_targets": st.get("retrieval_targets", []),
         }
         try:
             msg = self.invoke(
@@ -447,6 +575,18 @@ class AgentService:
         answer = (
             st["answer"] if not st["validation_errors"] else limited("引用校验未通过，暂时无法提供可靠回答。")
         )
+        if not st["assessment"].get("sufficient") and answer["status"] == "supported":
+            answer = {**answer, "status": "limited", "paragraphs": list(answer["paragraphs"])}
+            if not any(p["kind"] == "limitation" for p in answer["paragraphs"]):
+                note = {
+                    "text": "证据检查仍有缺口或上下文覆盖限制，以上仅为已获得依据支持的部分回答。",
+                    "kind": "limitation",
+                    "evidence_ids": [],
+                }
+                if len(answer["paragraphs"]) == 10:
+                    answer["paragraphs"][-1] = note
+                else:
+                    answer["paragraphs"].append(note)
         used = list(
             dict.fromkeys(
                 [eid for p in answer["paragraphs"] for eid in p["evidence_ids"]]
@@ -485,6 +625,7 @@ class AgentService:
             "answer": answer,
             "citations": citations,
             "trace": st["events"],
+            "retrieval_targets": st.get("retrieval_targets", []),
             "metrics": {
                 "retrieval_rounds": st["rounds"],
                 "tools_executed": st["tools_executed"],

@@ -131,13 +131,15 @@ curl --fail http://127.0.0.1:8501/_stcore/health
 ```bash
 .venv/bin/python scripts/evaluate.py
 .venv/bin/python scripts/summarize_evaluation.py
+# 单题回归（仍调用真实模型），独立保存结果
+.venv/bin/python scripts/evaluate.py --case q24 --output reports/q24.jsonl --force
 ```
 
-题集位于 `eval/cases.json`；结果写入 `reports/evaluation.jsonl`，按快照和题目 ID 断点续跑。完整重跑前应归档旧结果。汇总工具按快照分别统计引用完整性、检索预算和预设行为检查，不将这些指标作为法律语义准确率。
+题集位于 `eval/cases.json`；结果写入 `reports/evaluation.jsonl`，按快照和题目 ID 断点续跑。完整重跑前应归档旧结果。汇总工具按快照分别统计引用完整性、检索预算和预设行为检查，不将这些指标作为法律语义准确率。跨文件案例可通过 `required_locators` 指定必须引用的依据；补查清单还检查各目标是否完整纳入上下文。
 
 ## 功能与目录
 
-模型通过 LangGraph 选择精确定位或语义检索工具，检查证据，必要时补查，生成回答并校验引用。默认最多两轮检索、每轮两个工具、一次引用修复。页面提供证据、完整条文、PDF 对应页及执行过程查看。
+模型通过 LangGraph 选择精确定位或语义检索工具，检查证据，必要时补查，生成回答并校验引用。证据检查将明确缺口整理为结构化清单，由程序执行批量精确补查（每批最多 8 项），并记录各目标的查询结果与上下文保留情况；语义检索同时返回相关章节目录辅助定位，目录不作为回答证据；无法确定位置时通过语义检索补查。默认最多两轮检索、每轮两个工具、一次引用修复。最终证据最多 16 个完整片段、10,000 字符，超出预算或未找到的依据会保留为回答限制。页面提供证据、完整条文、PDF 对应页及执行过程查看。
 
 ```text
 Chinese_patent_agent/
